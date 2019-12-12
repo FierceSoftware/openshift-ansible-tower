@@ -32,10 +32,6 @@ And answer the prompts to deploy the full Ansible Tower on OCP stack.
 
 For manual deployment please read the instructions at https://docs.ansible.com/ansible-tower/3.6.1/html/administration/openshift_configuration.html
 
-
-## Initial Setup
-
-
 ## LDAP Configuration with FreeIPA/Red Hat Identity Management (IDM)
 
 1. From OpenShift, navigate to the exposed route, log in with the Tower Admin account used during deployment
@@ -46,7 +42,7 @@ For manual deployment please read the instructions at https://docs.ansible.com/a
   - LDAP Server URI: ```ldaps://idm.example.com:636```
   - LDAP Bind DN: ```uid=admin,cn=users,cn=accounts,dc=example,dc=com```
   - LDAP Bind Password: duh_fill_this_one_out_yourself
-  - LDAP User DN Template: ```uid=%(user)s,cn=users,cn=accounts,dc=example,dc=com``
+  - LDAP User DN Template: ```uid=%(user)s,cn=users,cn=accounts,dc=example,dc=com```
   - LDAP Group Type: ```NestedMemberDNGroupType```
   - LDAP Require Group *(optional)*: ```cn=ipausers,cn=groups,cn=accounts,dc=example,dc=com```
   - LDAP User Search:
