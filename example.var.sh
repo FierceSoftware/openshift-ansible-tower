@@ -3,6 +3,7 @@
 OCP_HOST=""
 
 OCP_AUTH_TYPE="userpass"
+OC_ARG_OPTIONS=""
 
 OCP_USERNAME=""
 OCP_PASSWORD=""
@@ -11,20 +12,20 @@ OCP_TOKEN=""
 OCP_CREATE_PROJECT="true"
 OCP_PROJECT_NAME="automation-ansible-tower"
 
-TOWER_DEPLOY_EXAMPLE_CONFIG="true"
+ANSIBLE_TOWER_ADMIN_USERNAME="towerAdmin"
+ANSIBLE_TOWER_ADMIN_PASSWORD=""
+
+ANSIBLE_TOWER_PERFORM_CONFIGURATION="true"
 
 TMP_WORKING_DIR="/tmp/oc-tower-deployer"
+ANSIBLE_TOWER_SECRET_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
+POSTGRES_USERNAME="towerpg"
+POSTGRES_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+POSTGRES_DATABASE="tower"
 
-
-ROCKET_CHAT_ROUTE=""
-ROCKET_CHAT_ROUTE_EDGE_TLS="true"
-RH_RHN=""
-RH_EMAIL=""
-RH_PASSWORD=""
-RC_ADMIN_USERNAME="rcadmin"
-RC_ADMIN_PASS="sup3rs3cr3t"
-RC_ADMIN_EMAIL="you@example.com"
+RABBITMQ_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+RABBITMQ_ERLANG_COOKIE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
 
 ## Do not edit past this line
 
