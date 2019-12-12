@@ -198,8 +198,11 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     ## Set ansible-tower-cli config
     echo -e "\n================================================================================"
     echo -e "Configuring ansible-tower-cli...\n"
-    awx --config.host "https://$TOWER_ROUTE"
-    awx --config.username $ANSIBLE_TOWER_ADMIN_USERNAME
-    awx --config.password $ANSIBLE_TOWER_ADMIN_PASSWORD
+    export AWX_CLI_CONF="--conf.host https://$TOWER_ROUTE --conf.username $ANSIBLE_TOWER_ADMIN_USERNAME --conf.password $ANSIBLE_TOWER_ADMIN_PASSWORD -k"
+    
+    ## Create organization
+    echo -e "\n================================================================================"
+    echo -e "Create Workshops Organization...\n"
+    awx $(echo $AWX_CLI_CONF) organizations create --name Workshops --description "Organization for Workshop users"
 
 fi
