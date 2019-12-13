@@ -48,6 +48,7 @@ echo -e "Checking prerequisites...\n"
 checkForProgram ansible
 checkForProgram ansible-playbook
 checkForProgram curl
+checkForProgram jq
 checkForProgram oc
 checkForProgram pip3
 
@@ -199,10 +200,17 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     echo -e "\n================================================================================"
     echo -e "Configuring ansible-tower-cli...\n"
     export AWX_CLI_CONF="--conf.host https://$TOWER_ROUTE --conf.username $ANSIBLE_TOWER_ADMIN_USERNAME --conf.password $ANSIBLE_TOWER_ADMIN_PASSWORD -k"
+    awx $(echo $AWX_CLI_CONF) login
     
     ## Create organization
     echo -e "\n================================================================================"
     echo -e "Create Workshops Organization...\n"
     awx $(echo $AWX_CLI_CONF) organizations create --name Workshops --description "Organization for Workshop users"
+    
+    ## Patch LDAP SSL Cert Chain Checks
+    echo -e "\n================================================================================"
+    echo -e "Patch LDAP SSL CA Cert Chain check...\n"
+    export MODIFIEDJSON=$(curl -f -k -H 'Content-Type: application/json' -XGET --user $ANSIBLE_TOWER_ADMIN_USERNAME:$ANSIBLE_TOWER_ADMIN_PASSWORD https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
+    curl -f -k -H 'Content-Type: application/json' -XPUT -d $MODIFIEDJSON --user $ANSIBLE_TOWER_ADMIN_USERNAME:$ANSIBLE_TOWER_ADMIN_PASSWORD https://$TOWER_ROUTE/api/v2/settings/ldap/
 
 fi

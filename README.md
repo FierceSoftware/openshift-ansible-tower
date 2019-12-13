@@ -6,7 +6,7 @@ This repository contains templates and tooling for taking Ansible Tower on OpenS
 
 An Ansible Tower license is required for you to continue past deployment.  Contact [Fierce Software](https://fiercesw.com) for a demo/trial license.
 
-For post-deployment configuration **pip3** will also be required.
+For post-deployment configuration **jq** and **pip3** will also be required.
 
 ##  Deployment - Automated
 
@@ -40,7 +40,7 @@ For manual deployment please read the instructions at https://docs.ansible.com/a
 
   - LDAP Server - Default
   - LDAP Server URI: ```ldaps://idm.example.com:636```
-  - LDAP Bind DN: ```uid=admin,cn=users,cn=accounts,dc=example,dc=com```
+  - LDAP Bind DN: ```cn=Directory Manager```
   - LDAP Bind Password: duh_fill_this_one_out_yourself
   - LDAP User DN Template: ```uid=%(user)s,cn=users,cn=accounts,dc=example,dc=com```
   - LDAP Group Type: ```NestedMemberDNGroupType```
@@ -89,10 +89,17 @@ For manual deployment please read the instructions at https://docs.ansible.com/a
   {
     "Default": {
       "remove_admins": false,
+      "remove_users": false,
       "admins": "cn=admins,cn=groups,cn=accounts,dc=example,dc=com",
       "users": "cn=ipausers,cn=groups,cn=accounts,dc=example,dc=com"
     }
   }
   ```
 
-***NOTE:***  There is currently an issue with LDAP+Tower in a containerized deployment.  Support ticket opened and solution pending.
+4. ***NOTE:***  If you use RH IDM/FreeIPA with a self-signed CA then you'll need to also set additional LDAP Connection Options via the API.  The following is an example of how to do it via cURL and jq:
+
+```bash
+$ export MODIFIEDJSON=$(curl -f -k -H 'Content-Type: application/json' -XGET --user towerAdmin:aVerySecurePassword https://ansible-tower.ocp.example.com/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
+$ curl -f -k -H 'Content-Type: application/json' -XPUT -d $MODIFIEDJSON --user towerAdmin:aVerySecurePassword https://ansible-tower.ocp.example.com/api/v2/settings/ldap/
+```
+
