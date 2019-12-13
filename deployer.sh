@@ -2,6 +2,26 @@
 
 ## set -x	## Uncomment for debugging
 
+
+function checkForProgram() {
+  command -v $1
+  if [[ $? -eq 0 ]]; then
+    printf '%-72s %-7s\n' $1 "PASSED!";
+  else
+    printf '%-72s %-7s\n' $1 "FAILED!";
+    exit 1
+  fi
+}
+
+function returnDC() {
+    TOWER_LDAP_DC=""
+    for i in $(echo $1 | tr "." "\n")
+    do
+        TOWER_LDAP_DC="${TOWER_LDAP_DC},dc=$i"
+    done
+    echo ${TOWER_LDAP_DC#?}
+}
+
 ## Default variables to use
 export INTERACTIVE=${INTERACTIVE:="true"}
 export OCP_HOST=${OCP_HOST:=""}
@@ -30,16 +50,15 @@ export POSTGRES_DATABASE=${POSTGRES_DATABASE:="tower"}
 export RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)}
 export RABBITMQ_ERLANG_COOKIE=${RABBITMQ_ERLANG_COOKIE:=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)}
 
+export CONFIGURE_TOWER_LDAP=${CONFIGURE_TOWER_LDAP:="false"}
+export TOWER_LDAP_DOMAIN_REALM=${TOWER_LDAP_DOMAIN_REALM:="EXAMPLE.COM"}
+export TOWER_LDAP_SERVER_URI=${TOWER_LDAP_SERVER_URI:="ldaps://idm.example.com:636"}
+export TOWER_LDAP_BIND_DN=${TOWER_LDAP_BIND_DN:="cn=Directory Manager"}
+export TOWER_LDAP_BIND_PASSWORD=${TOWER_LDAP_BIND_PASSWORD:=""}
+export TOWER_LDAP_USER_ATTR_MAP=${TOWER_LDAP_USER_ATTR_MAP:='{"first_name": "givenName", "last_name": "sn", "email": "mail"}'}
+export TOWER_LDAP_GROUP_TYPE=${TOWER_LDAP_GROUP_TYPE:="NestedMemberDNGroupType"}
+export TOWER_LDAP_GROUP_TYPE_PARAMS=${TOWER_LDAP_GROUP_TYPE_PARAMS:='{"name_attr": "cn", "member_attr": "member"}'}
 
-function checkForProgram() {
-  command -v $1
-  if [[ $? -eq 0 ]]; then
-    printf '%-72s %-7s\n' $1 "PASSED!";
-  else
-    printf '%-72s %-7s\n' $1 "FAILED!";
-    exit 1
-  fi
-}
 echo -e "\n\n================================================================================"
 echo -e "Starting Ansible Tower on Red Hat OpenShift Deployer...\n"
 echo -e "\n\n================================================================================"
@@ -120,6 +139,42 @@ if [ "$INTERACTIVE" == "true" ]; then
 		export ANSIBLE_TOWER_PERFORM_CONFIGURATION="$choice";
 	fi
 
+	read -rp "Configure LDAP? (true/false) ($CONFIGURE_TOWER_LDAP): " choice;
+	if [ "$choice" != "" ] ; then
+		export CONFIGURE_TOWER_LDAP="$choice";
+	fi
+
+    if [ "$CONFIGURE_TOWER_LDAP" = "true" ]; then
+
+        read -rp "LDAP Domain Realm ($TOWER_LDAP_DOMAIN_REALM): " choice;
+        if [ "$choice" != "" ] ; then
+            export TOWER_LDAP_DOMAIN_REALM="$choice";
+        fi
+
+        read -rp "LDAP Server URI ($TOWER_LDAP_SERVER_URI): " choice;
+        if [ "$choice" != "" ] ; then
+            export TOWER_LDAP_SERVER_URI="$choice";
+        fi
+
+        read -rp "LDAP Bind DN ($TOWER_LDAP_BIND_DN): " choice;
+        if [ "$choice" != "" ] ; then
+            export TOWER_LDAP_BIND_DN="$choice";
+        fi
+
+        read -rsp "LDAP Bind DN Password ($TOWER_LDAP_BIND_PASSWORD): " choice;
+        if [ "$choice" != "" ] ; then
+            export TOWER_LDAP_BIND_PASSWORD="$choice";
+        fi
+        echo -e ""
+
+        export TOWER_LDAP_DC_BASE=${TOWER_LDAP_DC_BASE:=$(returnDC $TOWER_LDAP_DOMAIN_REALM)}
+        export TOWER_LDAP_USER_SEARCH=${TOWER_LDAP_USER_SEARCH:="[\"cn=groups,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(uid=%(user)s)\"]"}
+        export TOWER_LDAP_USER_DN_TEMPLATE=${TOWER_LDAP_USER_DN_TEMPLATE:="uid=%(user)s,cn=users,cn=accounts,${TOWER_LDAP_DC_BASE}"}
+        export TOWER_LDAP_GROUP_SEARCH=${TOWER_LDAP_GROUP_SEARCH:="[\"cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(objectClass=groupOfNames)\"]"}
+        export TOWER_LDAP_USER_FLAGS_BY_GROUP=${TOWER_LDAP_USER_FLAGS_BY_GROUP:="{ \"is_superuser\": [ \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\" ] }"}
+        export TOWER_LDAP_ORGANIZATION_MAP=${TOWER_LDAP_ORGANIZATION_MAP:="{ \"Default\": { \"users\": \"cn=ipausers,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"admins\": \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"remove_users\": false, \"remove_admins\": false } }"}
+
+    fi
 fi
 
 ## Log in
@@ -212,5 +267,12 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     echo -e "Patch LDAP SSL CA Cert Chain check...\n"
     export MODIFIEDJSON=$(curl -f -k -H 'Content-Type: application/json' -XGET --user $ANSIBLE_TOWER_ADMIN_USERNAME:$ANSIBLE_TOWER_ADMIN_PASSWORD https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
     curl -f -k -H 'Content-Type: application/json' -XPUT -d $MODIFIEDJSON --user $ANSIBLE_TOWER_ADMIN_USERNAME:$ANSIBLE_TOWER_ADMIN_PASSWORD https://$TOWER_ROUTE/api/v2/settings/ldap/
+
+
+    if [ $CONFIGURE_TOWER_LDAP = "true" ]; then
+
+        ## export LDAPJSON=$((curl -f -k -H 'Content-Type: application/json' -XGET --user $ANSIBLE_TOWER_ADMIN_USERNAME:$ANSIBLE_TOWER_ADMIN_PASSWORD https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_SERVER_URI = '$TOWER_LDAP_SERVER_URI'')
+
+    fi
 
 fi
