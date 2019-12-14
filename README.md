@@ -10,12 +10,12 @@ For post-deployment configuration **jq** and **pip3** will also be required.
 
 ##  Deployment - Automated
 
-The deployment script ```./deploy.sh``` can also take preset environmental variables to provision without prompting the user.  To do so, copy over the ```example.vars.sh``` file, set the variables, source and run the deployer.
+The deployment script ```./deploy.sh``` can also take preset environmental variables to provision without prompting the user.  To do so, copy over the ```example.vars.sh``` file, set the variables, run the deployer which will automatically source the ```./vars.sh``` file.
 
 ```bash
 $ cp example.vars.sh vars.sh
 $ vim vars.sh
-$ source ./vars.sh && ./deployer.sh
+$ ./deployer.sh
 ```
 
 ##  Deployment - Interactive

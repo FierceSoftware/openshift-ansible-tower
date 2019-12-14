@@ -22,6 +22,11 @@ function returnDC() {
     echo ${TOWER_LDAP_DC#?}
 }
 
+FILE=./vars.sh
+if [ -f "$FILE" ]; then
+    source ./vars.sh
+fi
+
 ## Default variables to use
 export INTERACTIVE=${INTERACTIVE:="true"}
 export OCP_HOST=${OCP_HOST:=""}
@@ -235,6 +240,11 @@ if [ "$OCP_AUTH_TYPE" = "token" ]; then
 fi
 
 if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
+    ## Wait for tower to come up
+    echo -e "\n================================================================================"
+    echo -e "Waiting for Tower to be available, sleeping 60s...\n"
+    sleep 60
+
     ## Configuring Ansible Tower
     echo -e "\n================================================================================"
     echo -e "Configuring Ansible Tower...\n"
@@ -266,18 +276,17 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     echo -e "\n================================================================================"
     echo -e "Patch LDAP SSL CA Cert Chain check...\n"
         
-    export API_CURL_OPT=(-f -k -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
+    export API_CURL_OPT=(-f -sS -k -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
 
-    export MODIFIEDJSON=$(curl ${API_CURL_OPT[@]} -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
+    export MODIFIEDJSON=$(curl "${API_CURL_OPT[@]}" -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
 
-    curl ${API_CURL_OPT[@]} -XPUT -d $MODIFIEDJSON https://$TOWER_ROUTE/api/v2/settings/ldap/
+    curl "${API_CURL_OPT[@]}" -X PUT -d ''"$MODIFIEDJSON"'' https://$TOWER_ROUTE/api/v2/settings/ldap/
 
     if [ $CONFIGURE_TOWER_LDAP = "true" ]; then
 
-        export LDAPJSON=$(curl ${API_CURL_OPT[@]} -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/ \
-            | jq '.AUTH_LDAP_SERVER_URI = "'$TOWER_LDAP_SERVER_URI'" | .AUTH_LDAP_BIND_DN = "'$TOWER_LDAP_BIND_DN'" | .AUTH_LDAP_BIND_PASSWORD = "'$TOWER_LDAP_BIND_PASSWORD'" | .AUTH_LDAP_USER_SEARCH = '$TOWER_LDAP_USER_SEARCH' | .AUTH_LDAP_USER_DN_TEMPLATE = "'$TOWER_LDAP_USER_DN_TEMPLATE'" | .AUTH_LDAP_USER_ATTR_MAP = '$TOWER_LDAP_USER_ATTR_MAP' | .AUTH_LDAP_GROUP_SEARCH = '$TOWER_LDAP_GROUP_SEARCH' | .AUTH_LDAP_GROUP_TYPE = "'$TOWER_LDAP_GROUP_TYPE'" | .AUTH_LDAP_GROUP_TYPE_PARAMS = '$TOWER_LDAP_GROUP_TYPE_PARAMS' | .AUTH_LDAP_USER_FLAGS_BY_GROUP = '$TOWER_LDAP_USER_FLAGS_BY_GROUP' | .AUTH_LDAP_ORGANIZATION_MAP = '$TOWER_LDAP_ORGANIZATION_MAP'')
+        export LDAPJSON=$(curl "${API_CURL_OPT[@]}" -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/ | jq '.AUTH_LDAP_SERVER_URI = "'"$TOWER_LDAP_SERVER_URI"'" | .AUTH_LDAP_BIND_DN = "'"$TOWER_LDAP_BIND_DN"'" | .AUTH_LDAP_BIND_PASSWORD = "'"$TOWER_LDAP_BIND_PASSWORD"'" | .AUTH_LDAP_USER_SEARCH = '"$TOWER_LDAP_USER_SEARCH"' | .AUTH_LDAP_USER_DN_TEMPLATE = "'"$TOWER_LDAP_USER_DN_TEMPLATE"'" | .AUTH_LDAP_USER_ATTR_MAP = '"$TOWER_LDAP_USER_ATTR_MAP"' | .AUTH_LDAP_GROUP_SEARCH = '"$TOWER_LDAP_GROUP_SEARCH"' | .AUTH_LDAP_GROUP_TYPE = "'"$TOWER_LDAP_GROUP_TYPE"'" | .AUTH_LDAP_GROUP_TYPE_PARAMS = '"$TOWER_LDAP_GROUP_TYPE_PARAMS"' | .AUTH_LDAP_USER_FLAGS_BY_GROUP = '"$TOWER_LDAP_USER_FLAGS_BY_GROUP"' | .AUTH_LDAP_ORGANIZATION_MAP = '"$TOWER_LDAP_ORGANIZATION_MAP"'')
 
-        curl ${API_CURL_OPT[@]} -XPUT -d $LDAPJSON https://$TOWER_ROUTE/api/v2/settings/ldap/
+        curl "${API_CURL_OPT[@]}" -XPUT -d ''"$LDAPJSON"'' https://$TOWER_ROUTE/api/v2/settings/ldap/
 
     fi
 
