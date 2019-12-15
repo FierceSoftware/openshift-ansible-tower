@@ -4,22 +4,22 @@
 
 
 function checkForProgram() {
-  command -v $1
-  if [[ $? -eq 0 ]]; then
-    printf '%-72s %-7s\n' $1 "PASSED!";
-  else
-    printf '%-72s %-7s\n' $1 "FAILED!";
-    exit 1
-  fi
+    command -v $1
+    if [[ $? -eq 0 ]]; then
+        printf '%-72s %-7s\n' $1 "PASSED!";
+    else
+        printf '%-72s %-7s\n' $1 "FAILED!";
+        exit 1
+    fi
 }
 
 function returnDC() {
-    TOWER_LDAP_DC=""
+    LDAP_DC=""
     for i in $(echo $1 | tr "." "\n")
     do
-        TOWER_LDAP_DC="${TOWER_LDAP_DC},dc=$i"
+        LDAP_DC="${LDAP_DC},dc=$i"
     done
-    echo ${TOWER_LDAP_DC#?}
+    echo ${LDAP_DC#?}
 }
 
 FILE=./vars.sh
