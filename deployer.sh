@@ -283,7 +283,7 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
 
     curl "${API_CURL_OPT[@]}" -X PUT -d ''"$MODIFIEDJSON"'' https://$TOWER_ROUTE/api/v2/settings/ldap/
     
-    echo -e "Patch LDAP Configuration...\n"
+    echo -e "\n\n Patch LDAP Configuration...\n"
 
     if [ $CONFIGURE_TOWER_LDAP = "true" ]; then
 
