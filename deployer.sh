@@ -173,15 +173,15 @@ if [ "$INTERACTIVE" == "true" ]; then
         fi
         echo -e ""
 
-        export TOWER_LDAP_DC_BASE=${TOWER_LDAP_DC_BASE:=$(returnDC $TOWER_LDAP_DOMAIN_REALM)}
-        export TOWER_LDAP_USER_SEARCH=${TOWER_LDAP_USER_SEARCH:="[\"cn=groups,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(uid=%(user)s)\"]"}
-        export TOWER_LDAP_USER_DN_TEMPLATE=${TOWER_LDAP_USER_DN_TEMPLATE:="uid=%(user)s,cn=users,cn=accounts,${TOWER_LDAP_DC_BASE}"}
-        export TOWER_LDAP_GROUP_SEARCH=${TOWER_LDAP_GROUP_SEARCH:="[\"cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(objectClass=groupOfNames)\"]"}
-        export TOWER_LDAP_USER_FLAGS_BY_GROUP=${TOWER_LDAP_USER_FLAGS_BY_GROUP:="{ \"is_superuser\": [ \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\" ] }"}
-        export TOWER_LDAP_ORGANIZATION_MAP=${TOWER_LDAP_ORGANIZATION_MAP:="{ \"Default\": { \"users\": \"cn=ipausers,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"admins\": \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"remove_users\": false, \"remove_admins\": false } }"}
-
     fi
 fi
+
+export TOWER_LDAP_DC_BASE=${TOWER_LDAP_DC_BASE:=$(returnDC $TOWER_LDAP_DOMAIN_REALM)}
+export TOWER_LDAP_USER_SEARCH=${TOWER_LDAP_USER_SEARCH:="[\"cn=groups,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(uid=%(user)s)\"]"}
+export TOWER_LDAP_USER_DN_TEMPLATE=${TOWER_LDAP_USER_DN_TEMPLATE:="uid=%(user)s,cn=users,cn=accounts,${TOWER_LDAP_DC_BASE}"}
+export TOWER_LDAP_GROUP_SEARCH=${TOWER_LDAP_GROUP_SEARCH:="[\"cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"SCOPE_SUBTREE\", \"(objectClass=groupOfNames)\"]"}
+export TOWER_LDAP_USER_FLAGS_BY_GROUP=${TOWER_LDAP_USER_FLAGS_BY_GROUP:="{ \"is_superuser\": [ \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\" ] }"}
+export TOWER_LDAP_ORGANIZATION_MAP=${TOWER_LDAP_ORGANIZATION_MAP:="{ \"Default\": { \"users\": \"cn=ipausers,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"admins\": \"cn=admins,cn=groups,cn=accounts,"$(echo $TOWER_LDAP_DC_BASE)"\", \"remove_users\": false, \"remove_admins\": false } }"}
 
 ## Log in
 echo -e "\n\n================================================================================"
