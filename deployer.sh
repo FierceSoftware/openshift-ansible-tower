@@ -277,7 +277,7 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     echo -e "\n================================================================================"
     echo -e "Patch LDAP SSL CA Cert Chain check...\n"
         
-    export API_CURL_OPT=(-f -k -sS -k -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
+    export API_CURL_OPT=(-f -k -sS -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
 
     export MODIFIEDJSON=$(curl "${API_CURL_OPT[@]}" -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
 
