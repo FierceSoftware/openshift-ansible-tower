@@ -230,14 +230,14 @@ if [ "$OCP_AUTH_TYPE" = "userpass" ]; then
     ## Deploy Tower
     echo -e "\n================================================================================"
     echo -e "Deploying Ansible Tower with User/Pass...\n"
-    ./setup_openshift.sh -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_user=$OCP_USERNAME -e openshift_password=$OCP_PASSWORD -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
+    ./setup_openshift.sh -e openshift_skip_tls_verify=false -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_user=$OCP_USERNAME -e openshift_password=$OCP_PASSWORD -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
 fi
 
 if [ "$OCP_AUTH_TYPE" = "token" ]; then
     ## Deploy Tower
     echo -e "\n================================================================================"
     echo -e "Deploying Ansible Tower with User/Pass...\n"
-    ./setup_openshift.sh -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_token=$OCP_TOKEN -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
+    ./setup_openshift.sh -e openshift_skip_tls_verify=false -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_token=$OCP_TOKEN -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
 fi
 
 if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
@@ -253,7 +253,7 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     ## Get Tower Route
     echo -e "\n================================================================================"
     echo -e "Getting Ansible Tower Route from oc...\n"
-    export TOWER_ROUTE=$(oc get route ansible-tower-web-svc -o jsonpath='{.spec.host}')
+    export TOWER_ROUTE=$(oc $OC_ARG_OPTIONS get route ansible-tower-web-svc -o jsonpath='{.spec.host}')
     echo $TOWER_ROUTE
     echo -e "\n"
     
@@ -265,7 +265,7 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     ## Set ansible-tower-cli config
     echo -e "\n================================================================================"
     echo -e "Configuring ansible-tower-cli...\n"
-    export AWX_CLI_CONF="--conf.host https://$TOWER_ROUTE --conf.username $ANSIBLE_TOWER_ADMIN_USERNAME --conf.password $ANSIBLE_TOWER_ADMIN_PASSWORD -k"
+    export AWX_CLI_CONF="-k --conf.host https://$TOWER_ROUTE --conf.username $ANSIBLE_TOWER_ADMIN_USERNAME --conf.password $ANSIBLE_TOWER_ADMIN_PASSWORD -k"
     awx $(echo $AWX_CLI_CONF) login
     
     ## Create organization
@@ -277,7 +277,7 @@ if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
     echo -e "\n================================================================================"
     echo -e "Patch LDAP SSL CA Cert Chain check...\n"
         
-    export API_CURL_OPT=(-f -sS -k -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
+    export API_CURL_OPT=(-f -k -sS -k -H 'Content-Type: application/json' --user ${ANSIBLE_TOWER_ADMIN_USERNAME}:${ANSIBLE_TOWER_ADMIN_PASSWORD})
 
     export MODIFIEDJSON=$(curl "${API_CURL_OPT[@]}" -XGET https://$TOWER_ROUTE/api/v2/settings/ldap/  | jq '.AUTH_LDAP_CONNECTION_OPTIONS = { "OPT_X_TLS_REQUIRE_CERT": 0, "OPT_NETWORK_TIMEOUT": 30, "OPT_X_TLS_NEWCTX": 0, "OPT_REFERRALS": 0 }')
 
