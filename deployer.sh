@@ -230,14 +230,14 @@ if [ "$OCP_AUTH_TYPE" = "userpass" ]; then
     ## Deploy Tower
     echo -e "\n================================================================================"
     echo -e "Deploying Ansible Tower with User/Pass...\n"
-    ./setup_openshift.sh -e openshift_skip_tls_verify=false -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_user=$OCP_USERNAME -e openshift_password=$OCP_PASSWORD -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
+    ./setup_openshift.sh -e openshift_skip_tls_verify=true -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_user=$OCP_USERNAME -e openshift_password=$OCP_PASSWORD -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
 fi
 
 if [ "$OCP_AUTH_TYPE" = "token" ]; then
     ## Deploy Tower
     echo -e "\n================================================================================"
     echo -e "Deploying Ansible Tower with User/Pass...\n"
-    ./setup_openshift.sh -e openshift_skip_tls_verify=false -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_token=$OCP_TOKEN -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
+    ./setup_openshift.sh -e openshift_skip_tls_verify=true -e openshift_host=$OCP_HOST -e openshift_project=$OCP_PROJECT_NAME -e openshift_token=$OCP_TOKEN -e openshift_pg_emptydir=true -e admin_user=$ANSIBLE_TOWER_ADMIN_USERNAME -e admin_password=$ANSIBLE_TOWER_ADMIN_PASSWORD -e secret_key=$ANSIBLE_TOWER_SECRET_KEY -e pg_username=$POSTGRES_USERNAME -e pg_password=$POSTGRES_PASSWORD -e pg_database=$POSTGRES_DATABASE -e rabbitmq_password=$RABBITMQ_PASSWORD -e rabbitmq_erlang_cookie=$RABBITMQ_ERLANG_COOKIE
 fi
 
 if [ "$ANSIBLE_TOWER_PERFORM_CONFIGURATION" = "true" ]; then
