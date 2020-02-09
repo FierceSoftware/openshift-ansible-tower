@@ -11,6 +11,8 @@ OCP_TOKEN=""
 
 OCP_CREATE_PROJECT="true"
 OCP_PROJECT_NAME="automation-ansible-tower"
+OCP_PROJECT_DISPLAY_NAME="[Shared] Ansible Tower"
+OCP_PROJECT_DESCRIPTION="Automation with Red Hat Ansible Tower"
 
 ANSIBLE_TOWER_ADMIN_USERNAME="towerAdmin"
 ANSIBLE_TOWER_ADMIN_PASSWORD=""
