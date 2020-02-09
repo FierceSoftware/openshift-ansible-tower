@@ -40,6 +40,8 @@ export OC_ARG_OPTIONS=${OC_ARG_OPTIONS:=""}
 
 export OCP_CREATE_PROJECT=${OCP_CREATE_PROJECT:="true"}
 export OCP_PROJECT_NAME=${OCP_PROJECT_NAME:="automation-ansible-tower"}
+export OCP_PROJECT_DISPLAY_NAME=${OCP_PROJECT_DISPLAY_NAME:="[Shared] Ansible Tower"}
+export OCP_PROJECT_DESCRIPTION=${OCP_PROJECT_DESCRIPTION:="Automation with Red Hat Ansible Tower"}
 
 export ANSIBLE_TOWER_ADMIN_USERNAME=${ANSIBLE_TOWER_ADMIN_USERNAME:="towerAdmin"}
 export ANSIBLE_TOWER_ADMIN_PASSWORD=${ANSIBLE_TOWER_ADMIN_PASSWORD:=""}
@@ -192,7 +194,7 @@ oc $OC_ARG_OPTIONS login $OCP_HOST $OCP_AUTH
 echo -e "\n================================================================================"
 echo -e "Create/Set Project...\n"
 if [ "$OCP_CREATE_PROJECT" = "true" ]; then
-    oc $OC_ARG_OPTIONS new-project $OCP_PROJECT_NAME --description="Automation with Red Hat Ansible Tower" --display-name="[Shared] Ansible Tower"
+    oc $OC_ARG_OPTIONS new-project $OCP_PROJECT_NAME --description="$OCP_PROJECT_DESCRIPTION" --display-name="$OCP_PROJECT_DISPLAY_NAME"
 fi
 if [ "$OCP_CREATE_PROJECT" = "false" ]; then
     oc $OC_ARG_OPTIONS project $OCP_PROJECT_NAME
